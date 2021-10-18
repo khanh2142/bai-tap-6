@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Model.DAL
 {
-    class ProductDAL
+    public class ProductDAL
     {
         OnlineShopDbContext db = null;
         public ProductDAL()
@@ -20,20 +20,7 @@ namespace Model.DAL
             return db.Product.Find(id);
         }
 
-        public List<Product> GetByName(string name)
-        {
-            return db.Product.Where(x => x.Name == name).ToList();
-        }
 
-        public List<Product> GetByCode(string code)
-        {
-            return db.Product.Where(x => x.Code == code).ToList();
-        }
-
-        public List<Product> GetByDate(DateTime date)
-        {
-            return db.Product.Where(x => x.CreatedDate == date).ToList();
-        }
 
         public int Insert(Product entity)
         {
@@ -80,12 +67,12 @@ namespace Model.DAL
 
         public List<Product> GetByTopHot()
         {
-            return db.Product.OrderByDescending(x => x.TopHot).Take(10).ToList();
+            return db.Product.Where(x => x.TopHot >= DateTime.Now).OrderByDescending(x => x.TopHot).ToList();
         }
 
         public List<Product> GetByNewProduct()
         {
-            return db.Product.OrderBy(x => x.CreatedDate).Take(10).ToList();
+            return db.Product.Where(x => x.CreatedDate != null).OrderBy(x => x.CreatedDate).Take(10).ToList();
         }
 
         public List<Product> GetByCategory(long id)
@@ -96,7 +83,7 @@ namespace Model.DAL
         public List<Product> GetBySelectedProduct(long id)
         {
             Product product = GetByProductID(id);
-            return db.Product.Where(x => x.MetaKeywords == product.MetaKeywords).ToList();
+            return db.Product.Where(x => x.MetaKeywords.Contains(product.MetaKeywords)).ToList();
         }
 
         public List<Product> GetAllProduct()
@@ -109,20 +96,20 @@ namespace Model.DAL
             return db.Product.Where(x => x.PromotionPrice > 0).Take(10).ToList();
         }
 
-        public decimal? GetByPruchasePrice(long id)
+        public decimal? GetByPruchasePrice(long id, int quanity)
         {
             Product product = GetByProductID(id);
-            return product.PromotionPrice == null ? product.Price : product.Price - product.PromotionPrice;
+            return (product.PromotionPrice == null && quanity > 0) ? product.Price*quanity : (product.Price - product.PromotionPrice)*quanity;
         }
 
         public List<Product> GetByHighPromoteProduct()
         {
-            return db.Product.OrderByDescending(x => x.PromotionPrice).ToList();
+            return db.Product.Where(x=>x.PromotionPrice > 0).OrderByDescending(x => x.PromotionPrice).ToList();
         }
 
         public List<Product> GetByBestSeller()
         {
-            return db.Product.OrderByDescending(x => x.ViewCout).Take(10).ToList();
+            return db.Product.Where(x => x.ViewCout > 0).OrderByDescending(x => x.ViewCout).Take(10).ToList();
         }
 
     }
